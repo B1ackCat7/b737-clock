@@ -1,0 +1,15 @@
+{
+  "name": "b737-clock-portal",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "python3 -m http.server 7370 --bind 127.0.0.1 --directory dist"
+  },
+  "version": "1.0.0",
+  "description": "Browser USB controls for the Aviation 1 Boeing 737 NG replica clock",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/B1ackCat7/b737-clock.git"
+  }
+}
