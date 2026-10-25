@@ -1,49 +1,47 @@
-# v1.0.0 validation and known limits
+# v1.1.0 validation and known limits
 
-Release date: 2026-10-21. This release preserves the existing repaired interface and serial implementation. Packaging, version metadata, and public documentation were prepared separately from the private hosting history.
+Release date: 2026-10-24. v1.1.0 adds one-click online MAN/UTC sync while preserving the existing serial protocol, Mac/manual time controls, and other settings. The release retains the seven browser files from the tested update without further runtime changes.
 
 ## Automated checks
 
-All **18 Node tests** pass with `node --test tests/*.test.js`:
+All **28 Node tests** pass with `node --test tests/*.test.js`: the original 18 protocol/serial/support tests plus ten online-time tests.
 
-- Known CRC vectors and exact read frame.
-- Packet splits, concatenated reads, malformed frames, CRC/trailer rejection, and resynchronization.
-- Date validity, leap years, year limits, and UTC rollover.
-- Extended settings and the real 11-byte legacy capture, without invented metadata.
-- Identification before writes, read-only retry, matching acknowledgements, and malformed identification rejection.
-- Auto baud fallback, port permission reuse, cleanup after failure, and unplug handling.
-- Browser support, secure-origin, embedding-policy, and chooser-error diagnostics.
+- Known CRC vectors, exact read frames, split/combined packets, malformed frame rejection, and resynchronization.
+- Date validity, leap years, year limits, UTC rollover, supported settings layouts, and the captured legacy reply.
+- Identification before writes, read-only retry, matching acknowledgements, baud fallback, permissions, cleanup, and unplug handling.
+- Public UTC field validation, request cache/credential policy, network/HTTP/timeout rejection, and half-round-trip compensation.
+- Independent MAN/UTC dates, DST changes, expired samples, sequential command timing, and partial failures without write retry.
 
-Release preparation also checks Python syntax, Mac ZIP contents and launcher mode, source/package checksums, and equality of the six browser source files with the current working version. Unit tests use serial mocks; they do not exercise browser permissions or physical mechanics.
+Release preparation verifies Python syntax, documentation links, Mac ZIP integrity and launcher permissions, reproducible packaging, and equality of packaged browser files with the tested code. Unit tests use mocks; they do not establish browser permissions or physical timing accuracy.
 
-## Observed hardware behavior
+## Hardware and user acceptance
 
 | Check | Result |
 | --- | --- |
-| Mac USB/serial enumeration | CH340 `1a86:7523` detected |
-| Read at 57,600 on the tested unit | No reply |
-| Read at 9,600, DTR/RTS asserted | Valid settings reply, 11-byte payload |
-| Alarm write acknowledgement | Existing `[hour=0, minute=0, sound=1, volume=1]` reapplied unchanged; matching command-12 ACK |
-| Alarm read-back | Same four alarm values |
-| Physical time/chime/offset changes | Not performed |
+| Legacy USB adapter | CH340 `1a86:7523` detected |
+| Instrumented read at 9,600, DTR/RTS asserted | Valid settings reply, 11-byte payload |
+| Instrumented read at 57,600 on that unit | No reply |
+| Instrumented alarm round trip | Existing `[hour=0, minute=0, sound=1, volume=1]` reapplied unchanged; command-12 ACK and matching read-back |
+| Online-sync acceptance | Project owner tested the update, reported it working, and approved release on 2026-10-24 |
+| Independent physical timing-accuracy measurement | Not recorded |
+| Physical chime/calibration effects | Not verified |
 | Newer 57,600 hardware | Not physically tested |
 | Firmware update | Not implemented or performed |
-| Complete browser permission → physical write | Requires user interaction; not claimed as verified in automation |
+| Fully automated browser permission → physical write | Not claimed; browser chooser requires user interaction |
 
-The cable was changed during diagnosis, but the original cable was not tested at the successful 9,600 baud rate. The evidence establishes a baud/layout mismatch; it does not prove the original cable was faulty.
+The acceptance report supports releasing the tested update. It does not establish compatibility with every firmware revision or a subsecond accuracy guarantee. The original cable was not tested at the successful baud rate; the earlier evidence establishes a baud/layout mismatch, not a proven cable fault.
 
 ## Browser checks
 
-The existing release interface was visually checked in Edge at desktop and 390-pixel phone widths. Demo connect/disconnect, simulated writes, time drafts, activity log, and permission-cancellation messaging were checked. No relevant browser errors or horizontal overflow were observed. The screenshot in the README shows simulated settings, not a USB session. Mobile display support does not establish mobile hardware access.
+Edge demo tests fetched real public UTC locally and on the private ChatGPT site, populated MAN/UTC, and logged simulated writes with no relevant console errors. Mac-time and manual entry were also exercised. Desktop and 390-pixel mobile layouts were checked without horizontal overflow. The README screenshot shows the online-sync demo, not a USB session. Mobile layout support does not establish mobile hardware access.
 
 ## Remaining limitations
 
-- Physical verification covers one legacy unit and the unchanged-value alarm round trip, not all settings, firmware revisions, or operating systems.
-- Firmware identity and the trailing byte are not reported/mapped on legacy hardware.
-- A single returned timestamp cannot establish both MAN and UTC; chime read-back is unavailable, and offset read-back requires the supported 31-byte layout.
-- The existing offset field says degrees, but the raw byte's physical meaning has not been verified.
-- MAN/UTC writes are sequential, not atomic. A failed second command cannot undo an acknowledged first command.
-- USB permission and compatibility depend on the desktop browser and Mac driver exposure. Static hosting alone cannot provide remote clock access.
-- The supplied manual describes wider alarm ranges than the seller Chrome App. v1.0.0 preserves the app's 0–7 sound / 0–8 volume controls.
+- HTTP time sync estimates network delay; asymmetric traffic, server processing, USB latency, and whole-second fields affect precision. See [online-sync timing](ONLINE_TIME_SYNC.md#time-source-and-timing).
+- MAN and UTC are separate writes. A failed second command cannot undo an acknowledged first command; uncertain writes are not automatically retried.
+- Legacy firmware identity and the trailing byte are not mapped. A single reported timestamp cannot establish both MAN and UTC; chime read-back is unavailable and offset read-back requires the supported 31-byte layout.
+- The raw offset byte's physical scale/direction remains unverified, despite the existing field's degrees label.
+- The app retains sound IDs 0–7 and volume 0–8 from the seller Chrome App; the printed manual's wider ranges are not verified over USB.
+- USB access depends on desktop browser support, permissions, and Mac driver exposure. Static hosting does not provide remote access to another computer's clock.
 
-The release is the project's official v1.0.0 baseline; this label does not imply Boeing/manufacturer endorsement or removal of these limits.
+This is an independent consumer-replica utility. Release numbering does not imply Boeing/manufacturer endorsement.

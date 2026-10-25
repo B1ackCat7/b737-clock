@@ -1,4 +1,4 @@
-import { BAUD_RATE, COMMAND, PacketParser, frame } from './protocol.js?v=20261021';
+import { BAUD_RATE, COMMAND, PacketParser, frame } from './protocol.js?v=20261024';
 export class ClockConnection {
   constructor({ onSettings, onLog, onClosed, onProgress = () => {}, settleMs = 300, readTimeoutMs = 1500 }, serial = globalThis.navigator?.serial) {
     this.serial = serial; this.onSettings = onSettings; this.onLog = onLog; this.onClosed = onClosed;

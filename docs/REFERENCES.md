@@ -1,6 +1,6 @@
 # Manual references and source boundaries
 
-Documentation reviewed for v1.0.0 on 2026-10-21. Instructions are original paraphrases for this replica. No manual pages, vendor executables, firmware, or raw disassembly are redistributed.
+Manual sources reviewed for v1.0.0 on 2026-10-21; online-sync documentation added for v1.1.0 on 2026-10-24. Instructions are original paraphrases for this replica. No manual pages, vendor executables, firmware, or raw disassembly are redistributed.
 
 ## R1. Supplied Aviation 1 replica manual
 
@@ -38,7 +38,7 @@ For a licensed copy, consult the clock section for the applicable aircraft confi
 - [Chrome Web Serial documentation](https://developer.chrome.com/docs/capabilities/serial): browser serial access, device chooser, secure contexts, and permission policy.
 - [Python for macOS](https://www.python.org/downloads/macos/): Python 3 for the optional localhost launcher.
 
-The website and Mac package contain no external scripts, analytics, or data-upload functionality. Static hosting providers may log ordinary web requests independently of the app.
+The website and Mac package contain no external scripts, analytics, or clock-data-upload functionality. The online-sync control explicitly contacts [TimeAPI.io](https://timeapi.io/) using its [public HTTPS API](https://timeapi.io/swagger/); see [online-sync documentation](ONLINE_TIME_SYNC.md) for timing limits and request privacy. Static hosting providers may log ordinary web requests independently of the app.
 
 ## R5. Interoperability investigation
 

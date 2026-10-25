@@ -1,8 +1,9 @@
-import { COMMAND, datePayload, integer, settings } from './protocol.js?v=20261021';
-import { ClockConnection } from './serial.js?v=20261021';
-import { browserSupport, connectionError } from './support.js?v=20261021';
+import { COMMAND, datePayload, integer, settings } from './protocol.js?v=20261024';
+import { ClockConnection } from './serial.js?v=20261024';
+import { browserSupport, connectionError } from './support.js?v=20261024';
+import { TIME_SOURCE, fetchOnlineTime, writeOnlineTime } from './online-time.js?v=20261024';
 const $ = id => document.getElementById(id);
-let connection = null, demo = false, connected = false, busy = false, macTime = true;
+let connection = null, demo = false, connected = false, busy = false, timeSource = 'mac';
 let usbWriteAttempted = false;
 const entries = [];
 const support = browserSupport();
@@ -17,6 +18,8 @@ function log(message, level = 'info') {
 function notice(message, level = 'info') { $('notice').textContent = message; $('notice').className = `notice ${level}`; $('notice').hidden = false; }
 function updateControls() {
   document.querySelectorAll('.write').forEach(button => { button.disabled = busy || (!demo && !connected); });
+  $('mac-time').disabled = busy;
+  for (const id of ['man-date', 'man-time', 'utc-date', 'utc-time']) $(id).disabled = busy;
   $('read').disabled = busy || (!demo && !connected);
   $('connect').disabled = busy || !support.ready; $('demo').disabled = busy || connected;
   $('all-ports').disabled = busy || connected;
@@ -37,7 +40,7 @@ function macDraft() {
   $('man-time').value = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   $('utc-date').value = `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())}`;
   $('utc-time').value = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}`;
-  macTime = true;
+  timeSource = 'mac';
   $('time-source').textContent = `Draft from your Mac (${Intl.DateTimeFormat().resolvedOptions().timeZone}). Not written yet.`;
 }
 function applySettings(payload) {
@@ -102,7 +105,36 @@ $('demo').addEventListener('click', () => {
   updateControls();
 });
 $('mac-time').addEventListener('click', () => { macDraft(); notice('MAN and UTC drafts use your Mac’s clock. Choose Write time to send them.'); });
-for (const id of ['man-date', 'man-time', 'utc-date', 'utc-time']) $(id).addEventListener('input', () => { macTime = false; $('time-source').textContent = 'Manual draft. MAN and UTC are independent.'; });
+
+function showOnlineFields({ man, utc }) {
+  $('man-date').value = man.date; $('man-time').value = man.time;
+  $('utc-date').value = utc.date; $('utc-time').value = utc.time;
+}
+async function syncInternetTime() {
+  const button = $('online-sync');
+  try {
+    button.textContent = 'Fetching online time…';
+    $('time-source').textContent = 'Requesting public UTC time. No write confirmed yet.';
+    log(`Requesting fresh UTC from ${TIME_SOURCE.name} over HTTPS.`);
+    const sample = await fetchOnlineTime();
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    timeSource = 'online';
+    log(`${sample.source}: ${Math.round(sample.roundTripMs)} ms round trip; half-delay compensation applied. MAN zone: ${timeZone}.`);
+    button.textContent = demo ? 'Simulating time sync…' : 'Syncing clock…';
+    await writeOnlineTime(sample, { write, timeZone, onFields: showOnlineFields });
+    $('time-source').textContent = `${demo ? 'Demo: simulated sync' : 'Both time writes acknowledged'} · ${sample.source} · MAN ${timeZone} · ${Math.round(sample.roundTripMs)} ms round trip. Verify the clock.`;
+    notice(demo ? `Demo: fetched real time from ${sample.source}; MAN and UTC writes simulated. No USB data sent.` : `Online sync complete: MAN and UTC acknowledged using ${sample.source}. Verify both displays on the clock.`, demo ? 'demo' : 'info');
+  } catch (error) {
+    $('time-source').textContent = 'Online sync did not finish. Check the activity log and clock before retrying.';
+    throw error;
+  } finally { button.textContent = 'Sync from internet'; }
+}
+$('online-sync').addEventListener('click', () => {
+  if (!demo && !connected) return;
+  void operation(syncInternetTime);
+});
+
+for (const id of ['man-date', 'man-time', 'utc-date', 'utc-time']) $(id).addEventListener('input', () => { timeSource = 'manual'; $('time-source').textContent = 'Manual draft. MAN and UTC are independent.'; });
 $('volume').addEventListener('input', () => { $('volume').dataset.unverified = 'false'; $('volume-value').textContent = `${$('volume').value} / 8`; });
 $('read').addEventListener('click', () => operation(async () => {
   if (demo) applySettings(demoPayload()); else await connection.readSettings();
@@ -110,7 +142,8 @@ $('read').addEventListener('click', () => operation(async () => {
 }));
 function form(id, action) { $(id).addEventListener('submit', event => { event.preventDefault(); if (!demo && !connected) return; void operation(action); }); }
 form('time-form', async () => {
-  if (macTime) macDraft();
+  if (timeSource === 'online') { await syncInternetTime(); return; }
+  if (timeSource === 'mac') macDraft();
   // Validate both before sending either: USB writes are independent, not atomic.
   const man = datePayload($('man-date').value, $('man-time').value), utc = datePayload($('utc-date').value, $('utc-time').value);
   await write(COMMAND.MAN, man, 'MAN time');

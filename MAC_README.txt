@@ -1,4 +1,4 @@
-B737 CLOCK CONTROL - OFFICIAL PROJECT RELEASE v1.0.0
+B737 CLOCK CONTROL - OFFICIAL PROJECT RELEASE v1.1.0
 
 1. Unzip the download fully, then open Start Clock Portal.command.
 2. Python 3 must be available as python3. Leave Terminal open.
@@ -21,4 +21,10 @@ settings are sent automatically. Try demo performs no USB writes.
 See docs/USER_GUIDE.md for physical clock operation, alarms, and setup.
 See docs/VALIDATION.md for tested hardware and remaining limitations.
 Official project release (independent of Boeing and the manufacturer):
-https://github.com/B1ackCat7/b737-clock/releases/tag/v1.0.0
+https://github.com/B1ackCat7/b737-clock/releases/tag/v1.1.0
+
+ONLINE TIME SYNC
+Connect first, then click Sync from internet to write MAN and UTC using
+public HTTPS time from TimeAPI.io. MAN uses the Mac time zone. Try demo
+fetches real time but sends no USB writes. See docs/ONLINE_TIME_SYNC.md.
+The online-sync update was tested and approved by the project owner.

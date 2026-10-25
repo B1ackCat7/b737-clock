@@ -1,4 +1,6 @@
-# Serial protocol: v1.0.0 interoperability notes
+# Serial protocol: v1.1.0 interoperability notes
+
+The underlying serial command formats are unchanged from v1.0.0; online sync uses the existing MAN and UTC commands.
 
 These observations describe the supplied Aviation 1 replica and seller software, not a Boeing aircraft interface. See [sources](REFERENCES.md#r5-interoperability-investigation) and [validation](VALIDATION.md).
 

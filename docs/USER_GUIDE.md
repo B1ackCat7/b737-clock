@@ -1,4 +1,4 @@
-# B737 Clock Control v1.0.0: setup and clock operation
+# B737 Clock Control: setup and clock operation
 
 This guide covers the **Aviation 1 consumer replica** and the browser control tool. The physical instructions paraphrase the supplied `737clock_manual.pdf`, whose printed panels are P1–P6, and `737clock_upgrade.pdf`. See [references and Boeing FCOM access](REFERENCES.md). Replica-specific alarms, audio, USB settings, and mode switches are not aircraft functions.
 
@@ -10,7 +10,7 @@ You need the replica clock, a working USB **data** cable, a Mac that exposes its
 
 ### Downloaded Mac package
 
-1. Download **737-clock-mac-v1.0.0.zip** from the [v1.0.0 release](https://github.com/B1ackCat7/b737-clock/releases/tag/v1.0.0).
+1. Download **737-clock-mac-v1.1.0.zip** from the [v1.1.0 release](https://github.com/B1ackCat7/b737-clock/releases/tag/v1.1.0).
 2. Extract it, keeping all files together in **737 Clock Control**.
 3. Open **Start Clock Portal.command**. This needs Python 3 available as `python3`. If it is absent, install Python 3 from [python.org](https://www.python.org/downloads/macos/) and retry.
 4. Leave its Terminal window open. The launcher opens Chrome, or Edge if Chrome is absent, at **http://127.0.0.1:7370**. If neither is installed, open that address in a supported desktop browser yourself.
@@ -43,6 +43,8 @@ The read-back includes a single timestamp. Its MAN/UTC basis is not established 
 
 ## Change settings in the browser
 
+**Online time sync:** Connect, then click [Sync from internet](ONLINE_TIME_SYNC.md) once to fetch public UTC and write both MAN and UTC. It uses TimeAPI.io over HTTPS and your Mac time zone for MAN. This feature is included in the v1.1.0 Mac download and the updated ChatGPT site.
+
 Connecting and reading do not write settings. Each Write action sends only the named section; **Write time to clock** sends MAN followed by UTC as two separate commands. Start with **Try demo** if you want to learn the controls without USB writes, then exit demo to connect a real clock.
 
 ### MAN and UTC time/date
@@ -53,13 +55,13 @@ Connecting and reading do not write settings. Each Write action sends only the n
 4. Click **Write time to clock**. Check the result and the activity log. MAN may already have changed if the following UTC write fails.
 5. Inspect both MAN and UTC on the physical clock using **TIME/DATE**. A single USB timestamp read cannot confirm both.
 
-The replica does not receive the aircraft's GPS time source. Its manual says UTC correction uses the computer/data cable; the Windows guide provides separate local-time and UTC actions. This app uses your computer's clock and does not fetch an online time service or continuously synchronize the clock. [R1, P6 note 4; R2, step 4]
+The replica does not receive the aircraft's GPS time source. Its manual says UTC correction uses the computer/data cable; the Windows guide provides separate local-time and UTC actions. Use Mac time uses your computer’s clock. Sync from internet offers explicit online sync through TimeAPI.io; neither option continuously synchronizes the clock. [R1, P6 note 4; R2, step 4]
 
 ### Alarm
 
 Set the time, select a sound and volume, and click **Write alarm**. The rear **ALARM** switch must be **ON** for the replica's normal alarm mode. Sound **0** is muted/alarm off. Verify the alarm on the clock. [R1, P3–P4]
 
-v1.0.0 exposes sound IDs **0–7** and volume **0–8**, following the supplied seller Chrome App. The printed replica manual lists sounds **0–10** and volume **1–31**. Those wider ranges are not verified over USB and are not offered for new writes. A larger value read from a device is identified as unverified rather than silently treated as a supported setting; select a supported sound and explicitly adjust volume before writing. Sound names in the interface follow the seller app and may differ between firmware revisions.
+v1.1.0 exposes sound IDs **0–7** and volume **0–8**, following the supplied seller Chrome App. The printed replica manual lists sounds **0–10** and volume **1–31**. Those wider ranges are not verified over USB and are not offered for new writes. A larger value read from a device is identified as unverified rather than silently treated as a supported setting; select a supported sound and explicitly adjust volume before writing. Sound names in the interface follow the seller app and may differ between firmware revisions.
 
 ### Hourly chime
 
@@ -152,4 +154,4 @@ Firmware updating is **not implemented**. The seller's upgrade guide describes a
 
 ## What has been tested
 
-The tested legacy clock returned valid settings at 9,600 baud. Reapplying its existing alarm values produced the expected acknowledgement and matching read-back. This does not establish every firmware's behavior or verify time, chime, or calibration effects. See [VALIDATION.md](VALIDATION.md) for automated tests and remaining physical checks.
+The tested legacy clock returned valid settings at 9,600 baud. Reapplying its existing alarm values produced the expected acknowledgement and matching read-back. The project owner also tested the online-sync update and reported it working before v1.1.0. This does not establish every firmware’s behavior, independently measure timing accuracy, or verify chime/calibration effects. See [VALIDATION.md](VALIDATION.md) for automated tests and remaining physical checks.
